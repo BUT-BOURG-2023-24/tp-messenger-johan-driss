@@ -11,7 +11,7 @@ class Database
 	
 	async connect()
 	{
-		// config.DB_ADDRESS contient l'adresse de la BDD
+		config.DB_ADDRESS
 	}
 }
 
