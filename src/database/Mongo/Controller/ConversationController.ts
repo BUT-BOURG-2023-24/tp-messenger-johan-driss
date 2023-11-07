@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import ConversationModel, { IConversation } from "../Models/ConversationModel";
-//import * from ConversationService 
+import { MessageModel } from "../Models/MessageModel";
+//import * as ConversationService from 
 
 async function createConversation(title: string, participants: string[], message: string[], lastUpdate: Date, seen: Map<number, number>): Promise<IConversation> {
     const conversation = new ConversationModel({title, participants, message, lastUpdate, seen})
@@ -17,7 +18,12 @@ async function deleteConversation(idConv: number): Promise<void> {
 
 async function addMessageToConversation(req: Request, res: Response){
     try {
-        const idConv = req.params.
+        const conversationId = req.params.conversationId;
+        const message = req.body;
+        
+        const newMessage = new MessageModel(message);
+
+        const updatedConversation = await createConversation(req.params.)
     }
 }
 
