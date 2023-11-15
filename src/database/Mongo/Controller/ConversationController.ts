@@ -23,7 +23,10 @@ async function addMessageToConversation(req: Request, res: Response){
 
         const newMessage = new MessageModel(message);
 
-        const updatedConversation = await createConversation(req.params.)
+        // const updatedConversation = await createConversation(req.params.)
+    }
+    catch (err) {
+
     }
 }
 
