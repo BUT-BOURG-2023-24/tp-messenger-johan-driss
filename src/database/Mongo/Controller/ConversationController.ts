@@ -1,51 +1,91 @@
-import express, { Request, Response } from "express";
-import ConversationModel, { IConversation } from "../Models/ConversationModel";
-import { MessageModel } from "../Models/MessageModel";
-//import * as ConversationService from 
+import ConversationModel, {IConversation} from "../Models/ConversationModel";
+import {IMessage, MessageModel} from "../Models/MessageModel";
+import UserModel, {IUser} from "../Models/UserModel";
 
-const router = express.Router();
-async function createConversation(title: string, participants: string[], message: string[], lastUpdate: Date, seen: Map<number, number>): Promise<IConversation> {
-    const conversation = new ConversationModel({title, participants, message, lastUpdate, seen})
-    return await conversation.save();
-}
-
-async function getConversationById(idConv: number): Promise<IConversation | null> {
-    return await ConversationModel.findById(idConv).exec();
-}
-
-async function deleteConversation(idConv: number): Promise<void> {
-    await ConversationModel.findById(idConv)
-}
-
-async function addMessageToConversation(req: Request, res: Response, idConv: number): Promise<string>{
-    let conversation: IConversation;
-    conversation = getConversationById(idConv);
-
-    if(!conversation){
-        return "Conversation not found";
-    }else{
-        try {
-            const message = conversation.;
-            const lastUpdate = new Date(req.params.lastUpdate);
-            const seen = new Map<number, number>();
-            
-            const newMessage = new MessageModel(message);
-
-            const updatedConversation = await createConversation(req.params.title,req.params.participants,message,lastUpdate,seen)
-        }
+async function getConversationWithParticipants(participantIds: string) {
+    try {
+        const conversation = await ConversationModel.findOne({
+            participants: participantIds,
+        });
+        return {conversation};
+    } catch (error) {
+        return {error};
     }
 }
 
-async function getConversationWithParticipants(req: Request, res: Response){
-    
+async function getAllConversationsForUser(userId: string) {
+    try {
+        const conversations = await ConversationModel.find({participants: userId})
+            .populate({path: "participants"})
+            .populate({path: "messages"}).exec();
+        return conversations ?? [];
+    } catch (error) {
+        return {error};
+    }
 }
 
-function getAllConversationsForUser()
-{
-
+async function getConversationById(id: string) {
+    try {
+        const conversation = await ConversationModel.findById(id);
+        return {conversation} || null;
+    } catch (error) {
+        return {error};
+    }
 }
 
-function setConversationSeenForUserAndMessage()
-{
+async function createConversation(participants: string[]) {
+    try {
+        let title = "Conversation entre: ";
+        for (const user of participants) {
+            const userId: IUser | null = await UserModel.findById(user);
+            if (userId) {
+                title += userId.username + " ";
+            }
+        }
+        const newConversation = new ConversationModel({
+            participants,
+            title: title,
+        });
+        const savedConversation = await newConversation.save();
+        return {conversation: savedConversation};
+    } catch (error) {
+        return {error};
+    }
+}
 
+async function addMessageToConversation(id: string, message: IMessage) {
+    try {
+        const conversation = await ConversationModel.findById(id);
+        if (!conversation) {
+            return {error: "Conversation non trouvée !"};
+        }
+        conversation.messages.push(message);
+        const updatedConversation = await conversation.save();
+        return {conversation: updatedConversation};
+    } catch (error) {
+        return {error};
+    }
+
+    async function setConversationSeenForUserAndMessage(id: string, messageId: string, userId: string) {
+        try {
+            const conversation = await ConversationModel.findById(id);
+            if (!conversation) {
+                return {error: "Conversation non trouvée !"};
+            }
+            conversation.seen[userId] = messageId;
+            const updatedConversation = await conversation.save();
+            return {conversation: updatedConversation};
+        } catch (error) {
+            return {error};
+        }
+    }
+
+    async function deleteConversation(id: string) {
+        try {
+            const conversation = await ConversationModel.findByIdAndRemove(id);
+            return {success: !!conversation};
+        } catch (error) {
+            return {error};
+        }
+    }
 }
