@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IConversation extends Document {
 	participants: string[];
-	messages: Types.ObjectId[];
+	messages: string[];
 	title: string;
 	lastUpdate: Date;
 	seen: { [userId: string]: Types.ObjectId };
@@ -10,7 +10,7 @@ export interface IConversation extends Document {
 
 const conversationSchema: Schema<IConversation> = new Schema<IConversation>({
 	participants: [{ type: String, required: true }],
-	messages: [{ type: Types.ObjectId, ref: "Message" }],
+	messages: [{ type: String, ref: "Message" }],
 	title: { type: String, required: true },
 	lastUpdate: { type: Date, required: true },
 	seen: { type: Map, of: Types.ObjectId },
